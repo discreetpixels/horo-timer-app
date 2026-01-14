@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floating Timer</title>
+  <link rel="stylesheet" href="floating.css">
+</head>
+<body>
+  <div class="floating-container" id="floatingContainer">
+    <div class="floating-drag-handle" id="dragHandle">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="5" cy="5" r="2" fill="currentColor"/>
+        <circle cx="12" cy="5" r="2" fill="currentColor"/>
+        <circle cx="19" cy="5" r="2" fill="currentColor"/>
+        <circle cx="5" cy="12" r="2" fill="currentColor"/>
+        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        <circle cx="19" cy="12" r="2" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="floating-content">
+      <div class="floating-timer">
+        <div class="floating-tag" id="floatingTag">Timer</div>
+        <div class="floating-time" id="floatingTime">00:00</div>
+      </div>
+      <div class="floating-controls">
+        <button class="floating-btn" id="pauseBtn" title="Pause">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 4H10V20H6V4ZM14 4H18V20H14V4Z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="floating-btn" id="resumeBtn" title="Play" style="display: none;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="floating-btn" id="stopBtn" title="Stop">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="6" width="12" height="12" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="floating-btn" id="closeFloatingBtn" title="Close">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="floating-scroll-row">
+      <div class="floating-scroll-text" id="floatingScrollText">Timer Task</div>
+    </div>
+  </div>
+  
+  <audio id="notificationAudio"></audio>
+  <script src="floating.js"></script>
+</body>
+</html>

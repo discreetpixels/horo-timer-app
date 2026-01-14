@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Ruby10</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="settings-container">
+    <div class="settings-header">
+      <h1>Settings</h1>
+    </div>
+    
+    <div class="settings-content">
+      <div class="setting-group">
+        <h2>Notifications</h2>
+        
+        <div class="setting-item">
+          <label class="setting-label">
+            <input type="checkbox" id="showNotification" checked>
+            <span>Show desktop notifications</span>
+          </label>
+        </div>
+        
+        <div class="setting-item">
+          <label class="setting-label">
+            <input type="checkbox" id="playSound" checked>
+            <span>Play notification sound</span>
+          </label>
+        </div>
+        
+        <div class="setting-item">
+          <label class="setting-label">
+            <input type="checkbox" id="showCompletionAnimation" checked>
+            <span>Show completion animation</span>
+          </label>
+        </div>
+        
+        <div class="setting-item">
+          <label class="setting-label-block">
+            <span>Notification Sound</span>
+            <select id="notificationSound">
+              <option value="lexie-orbit" selected>Lexie Orbit</option>
+              <option value="zeus-sync">Zeus Sync</option>
+              <option value="lexies-comet">Lexie's Comet</option>
+              <option value="zeus-frequency">Zeus Frequency</option>
+              <option value="lexie-drive-protocol">Lexie Drive Protocol</option>
+              <option value="zeus-flowstate">Zeus Flowstate</option>
+            </select>
+          </label>
+          <button class="test-sound-btn" id="testSoundBtn">Test Sound</button>
+        </div>
+        
+        <div class="setting-item">
+          <label class="setting-label-block">
+            <span>Volume</span>
+            <div class="volume-control">
+              <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+              <span class="volume-value" id="volumeValue">50%</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h2>General</h2>
+        
+        <div class="setting-item">
+          <label class="setting-label">
+            <input type="checkbox" id="startAtLogin">
+            <span>Start at login</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h2>Help & Features</h2>
+        
+        <div class="setting-item">
+          <button class="help-btn" id="helpBtn">Show Help & Features</button>
+        </div>
+        
+        <div class="setting-item">
+          <button class="help-btn" id="presetsBtn">Customize Presets</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="help-popup" id="helpPopup" style="display: none;">
+      <div class="help-popup-content">
+        <div class="help-popup-header">
+          <h3>How to Use RubyTen Timer</h3>
+          <button class="help-close-btn" id="helpCloseBtn">×</button>
+        </div>
+        
+        <div class="help-content">
+          <div class="help-section">
+            <h4>Creating Timers</h4>
+            <ul>
+              <li><strong>Task + Time:</strong> Type "design logo 25m" to create a 25-minute timer for design work</li>
+              <li><strong>Time Only:</strong> Type "30m" for a 30-minute timer</li>
+              <li><strong>Specific Time:</strong> Type "@3pm" to set timer until 3 PM</li>
+              <li><strong>Quick Presets:</strong> Click preset buttons for common timers</li>
+            </ul>
+          </div>
+          
+          <div class="help-section">
+            <h4>Floating Timer Windows</h4>
+            <ul>
+              <li>Each timer gets its own floating window you can move around</li>
+              <li>Scrolling task name shows what you're working on</li>
+              <li>Control buttons: pause, play, stop, close</li>
+              <li>Click timer in main app to show floating window if hidden</li>
+            </ul>
+          </div>
+          
+          <div class="help-section">
+            <h4>Timer Completion</h4>
+            <ul>
+              <li>Celebration animation with particles (can be disabled)</li>
+              <li>Sound notification with custom volume control</li>
+              <li>"Run Again" button to restart the same timer</li>
+              <li>Timer history keeps track of recent timers</li>
+            </ul>
+          </div>
+          
+          <div class="help-section">
+            <h4>Menu Bar Integration</h4>
+            <ul>
+              <li>Shows countdown of next finishing timer</li>
+              <li>Click tray icon to open/hide main window</li>
+              <li>Right-click for context menu</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    
+    <div class="presets-popup" id="presetsPopup" style="display: none;">
+      <div class="presets-popup-content">
+        <div class="presets-popup-header">
+          <h3>Customize Presets</h3>
+          <button class="help-close-btn" id="presetsCloseBtn">×</button>
+        </div>
+        
+        <div class="presets-content">
+          <div class="presets-list" id="presetsList">
+            <!-- Presets will be populated here -->
+          </div>
+          
+          <div class="add-preset-section">
+            <h4>Add New Preset</h4>
+            <div class="preset-form">
+              <input type="text" id="presetName" placeholder="e.g., Focus Session">
+              <input type="text" id="presetTime" placeholder="e.g., 25m">
+              <button class="add-preset-btn" id="addPresetBtn">Add Preset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-footer">
+      <button class="btn-secondary" id="cancelBtn">Cancel</button>
+      <button class="btn-primary" id="saveBtn">Save Settings</button>
+    </div>
+  </div>
+  
+  <audio id="testAudio"></audio>
+  <script src="settings.js"></script>
+</body>
+</html>
+
