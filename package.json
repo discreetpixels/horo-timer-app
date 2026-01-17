@@ -1,7 +1,7 @@
 {
   "name": "ruby10",
   "productName": "Ruby10",
-  "version": "1.1.0",
+  "version": "1.0.3",
   "description": "A beautiful, modern menu bar timer for macOS",
   "main": "main.js",
   "homepage": ".",
@@ -11,13 +11,19 @@
     "build:dmg": "electron-builder --mac",
     "dist": "electron-builder --publish=never"
   },
+  "author": {
+    "name": "DiscreetPixels LLC",
+    "email": "benjaminarshee@gmail.com"
+  },
   "devDependencies": {
+    "@electron/notarize": "^3.1.1",
     "electron": "^28.0.0",
     "electron-builder": "^24.6.4"
   },
   "build": {
     "appId": "com.ruby10.timer",
     "productName": "Ruby10",
+    "afterSign": "scripts/notarize.js",
     "directories": {
       "output": "dist"
     },
@@ -27,12 +33,23 @@
       "!node_modules/**/*",
       "!*.md"
     ],
+    "asarUnpack": [
+      "assets/sounds/**/*"
+    ],
     "mac": {
       "icon": "assets/icon3.png",
       "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "notarize": false,
       "target": {
         "target": "dmg",
-        "arch": ["x64", "arm64"]
+        "arch": [
+          "x64",
+          "arm64"
+        ]
       },
       "extendInfo": {
         "LSUIElement": true
@@ -60,4 +77,3 @@
     }
   }
 }
-

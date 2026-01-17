@@ -24,12 +24,12 @@ ipcRenderer.on('init-floating-timer', (event, timer) => {
   const displayText = timer.tag || 'Timer';
   floatingTag.textContent = displayText;
   floatingScrollText.textContent = displayText;
-  
+
   // Apply gradient to drag handle
   if (timer.gradient) {
     document.querySelector('.floating-drag-handle').style.background = timer.gradient;
   }
-  
+
   updateTime();
 });
 
@@ -71,7 +71,7 @@ ipcRenderer.on('timer-complete', (event, data) => {
       floatingTime.style.color = '#666';
       floatingTag.style.color = '#666';
       document.querySelector('.floating-container').style.opacity = '0.7';
-      
+
       // Show run again button
       showRunAgainButton();
     }
@@ -80,37 +80,51 @@ ipcRenderer.on('timer-complete', (event, data) => {
 
 ipcRenderer.on('timer-stopped', (event, timerId) => {
   if (myTimer && myTimer.id === timerId) {
-    window.hide();
+    ipcRenderer.send('close-floating');
   }
 });
 
-function generateSound(type, volume) {
+const path = require('path');
+
+function playSound(soundName, volume) {
+  // In production, unpacked files are in app.asar.unpacked folder
+  let soundPath = path.join(__dirname, 'assets', 'sounds', `${soundName}.m4a`);
+
+  // Check if we're in a packaged app (asar)
+  if (__dirname.includes('app.asar')) {
+    soundPath = soundPath.replace('app.asar', 'app.asar.unpacked');
+  }
+
+  const audio = new Audio(soundPath);
+  audio.volume = volume;
+  audio.play().catch(err => {
+    console.error('Error playing sound:', err, 'Path:', soundPath);
+    generateFallbackSound(volume);
+  });
+}
+
+function generateFallbackSound(volume) {
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
-  
+
   oscillator.connect(gainNode);
   gainNode.connect(audioContext.destination);
-  
+
   gainNode.gain.setValueAtTime(0, audioContext.currentTime);
   gainNode.gain.linearRampToValueAtTime(volume * 0.3, audioContext.currentTime + 0.01);
   gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-  
-  if (type === 'Zeus-Frequency') {
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.5);
-  } else {
-    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.5);
-  }
-  
+
+  oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.5);
+
   oscillator.type = 'sine';
   oscillator.start(audioContext.currentTime);
   oscillator.stop(audioContext.currentTime + 0.5);
 }
 
 ipcRenderer.on('play-generated-sound', (event, data) => {
-  generateSound(data.soundName, data.volume);
+  playSound(data.soundName, data.volume);
 });
 
 // Button handlers
@@ -148,7 +162,7 @@ function updateTime() {
 function showCompletionAnimation() {
   const dragHandle = document.querySelector('.floating-drag-handle');
   const container = document.querySelector('.floating-content');
-  
+
   // Add red flash effect (4 quick flashes)
   let flashCount = 0;
   const flashInterval = setInterval(() => {
@@ -166,7 +180,7 @@ function showCompletionAnimation() {
       dragHandle.style.background = 'linear-gradient(135deg, #8B0000 0%, #DC143C 100%)';
     }
   }, 100);
-  
+
   // Add completion overlay after flash
   setTimeout(() => {
     const overlay = document.createElement('div');
@@ -177,7 +191,7 @@ function showCompletionAnimation() {
       <div class="particles"></div>
     `;
     container.appendChild(overlay);
-    
+
     // Create particles
     const particlesContainer = overlay.querySelector('.particles');
     for (let i = 0; i < 20; i++) {
@@ -187,7 +201,7 @@ function showCompletionAnimation() {
       particle.style.animationDelay = Math.random() * 2 + 's';
       particlesContainer.appendChild(particle);
     }
-    
+
     // Remove after 7 seconds and grey out
     setTimeout(() => {
       if (overlay.parentNode) {
@@ -198,7 +212,7 @@ function showCompletionAnimation() {
       floatingTime.style.color = '#666';
       floatingTag.style.color = '#666';
       document.querySelector('.floating-container').style.opacity = '0.7';
-      
+
       // Show run again button
       showRunAgainButton();
     }, 7000);
@@ -220,7 +234,7 @@ function showRunAgainButton() {
       </svg>
     </button>
   `;
-  
+
   // Add event listeners
   document.getElementById('runAgainBtn').addEventListener('click', () => {
     if (myTimer) {
@@ -231,7 +245,7 @@ function showRunAgainButton() {
       floatingTime.style.color = '';
       floatingTag.style.color = '';
       container.style.opacity = '1';
-      
+
       // Restore original controls
       const controls = document.querySelector('.floating-controls');
       controls.innerHTML = `
@@ -256,15 +270,15 @@ function showRunAgainButton() {
           </svg>
         </button>
       `;
-      
+
       // Re-add event listeners
       addControlEventListeners();
-      
+
       // Restart timer in same window
       const minutes = Math.floor(myTimer.duration / 60);
       const seconds = myTimer.duration % 60;
       let input = myTimer.tag ? `${myTimer.tag} ` : '';
-      
+
       if (minutes > 0 && seconds > 0) {
         input += `${minutes}m ${seconds}s`;
       } else if (minutes > 0) {
@@ -272,11 +286,11 @@ function showRunAgainButton() {
       } else {
         input += `${seconds}s`;
       }
-      
+
       ipcRenderer.send('restart-timer-in-floating', input, myTimer.id);
     }
   });
-  
+
   document.getElementById('closeFloatingBtn2').addEventListener('click', () => {
     ipcRenderer.send('close-floating');
   });
@@ -287,19 +301,19 @@ function addControlEventListeners() {
   const resumeBtn = document.getElementById('resumeBtn');
   const stopBtn = document.getElementById('stopBtn');
   const closeBtn = document.getElementById('closeFloatingBtn');
-  
+
   if (pauseBtn) pauseBtn.addEventListener('click', () => {
     if (myTimer) ipcRenderer.send('pause-timer', myTimer.id);
   });
-  
+
   if (resumeBtn) resumeBtn.addEventListener('click', () => {
     if (myTimer) ipcRenderer.send('resume-timer', myTimer.id);
   });
-  
+
   if (stopBtn) stopBtn.addEventListener('click', () => {
     if (myTimer) ipcRenderer.send('stop-timer', myTimer.id);
   });
-  
+
   if (closeBtn) closeBtn.addEventListener('click', () => {
     ipcRenderer.send('close-floating');
   });

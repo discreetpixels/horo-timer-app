@@ -11,7 +11,7 @@ let timers = [];
 function startTimer() {
   const input = timerInput.value.trim();
   if (!input) return;
-  
+
   ipcRenderer.send('start-timer', input);
   timerInput.value = '';
 }
@@ -93,35 +93,47 @@ ipcRenderer.on('timers-list', (event, timersList) => {
   renderTimers();
 });
 
+const path = require('path');
 
+function playSound(soundName, volume) {
+  // In production, unpacked files are in app.asar.unpacked folder
+  let soundPath = path.join(__dirname, 'assets', 'sounds', `${soundName}.m4a`);
 
-function generateSound(type, volume) {
+  // Check if we're in a packaged app (asar)
+  if (__dirname.includes('app.asar')) {
+    soundPath = soundPath.replace('app.asar', 'app.asar.unpacked');
+  }
+
+  const audio = new Audio(soundPath);
+  audio.volume = volume;
+  audio.play().catch(err => {
+    console.error('Error playing sound:', err, 'Path:', soundPath);
+    generateFallbackSound(volume);
+  });
+}
+
+function generateFallbackSound(volume) {
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
-  
+
   oscillator.connect(gainNode);
   gainNode.connect(audioContext.destination);
-  
+
   gainNode.gain.setValueAtTime(0, audioContext.currentTime);
   gainNode.gain.linearRampToValueAtTime(volume * 0.3, audioContext.currentTime + 0.01);
   gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-  
-  if (type === 'Zeus-Frequency') {
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.5);
-  } else {
-    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.5);
-  }
-  
+
+  oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.5);
+
   oscillator.type = 'sine';
   oscillator.start(audioContext.currentTime);
   oscillator.stop(audioContext.currentTime + 0.5);
 }
 
 ipcRenderer.on('play-generated-sound', (event, data) => {
-  generateSound(data.soundName, data.volume);
+  playSound(data.soundName, data.volume);
 });
 
 function pauseTimer(timerId) {
@@ -144,7 +156,7 @@ function formatTime(seconds) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  
+
   if (hours > 0) {
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   } else if (minutes > 0) {
@@ -166,18 +178,18 @@ function renderTimers() {
     `;
     return;
   }
-  
+
   // Sort timers: active first, then by most recent
   const sortedTimers = [...timers].sort((a, b) => {
     const aActive = a.status === 'running' || a.status === 'paused';
     const bActive = b.status === 'running' || b.status === 'paused';
-    
+
     if (aActive && !bActive) return -1;
     if (!aActive && bActive) return 1;
-    
+
     return b.id - a.id; // Most recent first
   });
-  
+
   timersList.innerHTML = sortedTimers.map(timer => {
     const remaining = timer.remaining !== undefined ? timer.remaining : Math.max(0, Math.floor((timer.endTime - Date.now()) / 1000));
     const isCompleted = timer.status === 'completed';
@@ -186,7 +198,7 @@ function renderTimers() {
     const isRunning = timer.status === 'running';
     const taskName = timer.tag || 'Timer';
     const timeDisplay = (isCompleted || isStopped) ? formatTime(timer.duration) : formatTime(remaining);
-    
+
     return `
       <div class="timer-item ${isCompleted || isStopped ? 'completed' : ''}">
         <div class="timer-header" onclick="${isRunning || isPaused ? `showFloatingTimer(${timer.id})` : ''}" style="${isRunning || isPaused ? 'cursor: pointer;' : ''}">
@@ -218,9 +230,9 @@ function renderTimers() {
 function reuseTimer(taskName, duration) {
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
-  
+
   let input = taskName && taskName !== 'Timer' ? `${taskName} ` : '';
-  
+
   if (minutes > 0 && seconds > 0) {
     input += `${minutes}m ${seconds}s`;
   } else if (minutes > 0) {
@@ -228,7 +240,7 @@ function reuseTimer(taskName, duration) {
   } else {
     input += `${seconds}s`;
   }
-  
+
   ipcRenderer.send('start-timer', input);
 }
 
@@ -242,7 +254,7 @@ function startPreset(preset) {
 
 function updatePresets(presets) {
   const hintsContainer = document.querySelector('.hint-examples');
-  hintsContainer.innerHTML = presets.map(preset => 
+  hintsContainer.innerHTML = presets.map(preset =>
     `<span class="hint-example" onclick="startPreset('${preset.time}')">${preset.display || preset.name}</span>`
   ).join('');
 }

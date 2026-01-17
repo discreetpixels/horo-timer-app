@@ -31,17 +31,17 @@ ipcRenderer.send('get-settings');
 
 ipcRenderer.on('settings-data', (event, settings) => {
   currentSettings = settings;
-  
+
   showNotificationCheckbox.checked = settings.showNotification;
   playSoundCheckbox.checked = settings.playSound;
   notificationSoundSelect.value = settings.notificationSound;
   startAtLoginCheckbox.checked = settings.startAtLogin;
   showCompletionAnimationCheckbox.checked = settings.showCompletionAnimation;
-  
+
   const volume = settings.volume || 50;
   volumeSlider.value = volume;
   volumeValue.textContent = volume + '%';
-  
+
   customPresets = settings.customPresets || [];
 });
 
@@ -65,18 +65,23 @@ window.addEventListener('beforeunload', () => {
     showCompletionAnimation: showCompletionAnimationCheckbox.checked,
     volume: parseInt(volumeSlider.value),
   };
-  
+
   ipcRenderer.send('save-settings', newSettings);
 });
 
 testSoundBtn.addEventListener('click', () => {
   const soundName = notificationSoundSelect.value;
-  const soundPath = path.join(__dirname, 'assets', 'sounds', `${soundName}.m4a`);
-  
+  let soundPath = path.join(__dirname, 'assets', 'sounds', `${soundName}.m4a`);
+
+  // In production, unpacked files are in app.asar.unpacked folder
+  if (__dirname.includes('app.asar')) {
+    soundPath = soundPath.replace('app.asar', 'app.asar.unpacked');
+  }
+
   testAudio.src = soundPath;
   testAudio.volume = volumeSlider.value / 100;
   testAudio.play().catch(err => {
-    console.error('Error playing test sound:', err);
+    console.error('Error playing test sound:', err, 'Path:', soundPath);
     alert('Could not play sound. Please ensure sound files are present.');
   });
 });
@@ -90,7 +95,7 @@ saveBtn.addEventListener('click', () => {
     showCompletionAnimation: showCompletionAnimationCheckbox.checked,
     volume: parseInt(volumeSlider.value),
   };
-  
+
   ipcRenderer.send('save-settings', newSettings);
 });
 
@@ -135,12 +140,12 @@ presetsPopup.addEventListener('click', (e) => {
 addPresetBtn.addEventListener('click', () => {
   const name = presetName.value.trim();
   const time = presetTime.value.trim();
-  
+
   if (name && time) {
     // Normalize time format (add space if missing)
     const normalizedTime = time.replace(/(\d+)(min|m|h|hour|hours)/, '$1 $2');
-    customPresets.push({ 
-      name, 
+    customPresets.push({
+      name,
       time: `${name} ${normalizedTime}`,
       display: `${normalizedTime} ${name}`
     });
@@ -169,10 +174,10 @@ function renderPresets() {
 function editPreset(index) {
   const preset = customPresets[index];
   const presetItem = document.getElementById(`preset-${index}`);
-  
+
   // Show current preset as editable text (like "Focus 25m" or "design logo 20min")
   const currentValue = `${preset.name} ${preset.time.split(' ').slice(1).join(' ')}`;
-  
+
   presetItem.innerHTML = `
     <div class="preset-edit">
       <input type="text" value="${currentValue}" id="edit-input-${index}" 
@@ -182,7 +187,7 @@ function editPreset(index) {
       <button class="preset-btn delete-btn" onclick="cancelEdit(${index})">Cancel</button>
     </div>
   `;
-  
+
   // Focus and select all text
   const input = document.getElementById(`edit-input-${index}`);
   input.focus();
@@ -192,20 +197,20 @@ function editPreset(index) {
 function savePreset(index) {
   const input = document.getElementById(`edit-input-${index}`);
   const value = input.value.trim();
-  
+
   if (value) {
     // Parse the input to extract name and time
     const timeRegex = /(\d+)\s*(min|mins|m|h|hour|hours)\b/i;
     const timeMatch = value.match(timeRegex);
-    
+
     if (timeMatch) {
       // Extract time part and normalize it
       const timeStr = timeMatch[0];
       const normalizedTime = timeStr.replace(/(\d+)(min|mins|m|h|hour|hours)/i, '$1 $2');
-      
+
       // Extract name (everything before the time)
       const name = value.replace(timeRegex, '').trim();
-      
+
       if (name) {
         customPresets[index] = {
           name: name,
@@ -218,7 +223,7 @@ function savePreset(index) {
       }
     }
   }
-  
+
   // If parsing failed, cancel edit
   renderPresets();
 }
